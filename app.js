@@ -75,7 +75,7 @@
         '<div class="now-head"><span class="month-badge">今月・' + esc(curMonth.name) + '</span>' +
         '<span class="theme">' + esc(curMonth.theme) + '</span></div>' +
         (curCal ? '<div class="month-cal">' +
-          '<span><b>気象</b>' + curCal.weather.replace(/<[^>]+>/g, '') + '</span>' +
+          '<span><b>気象</b>' + curCal.weather.replace(/<[^>]+>/g, ' ') + '</span>' +
           '<span><b>置き場所</b>' + curCal.placement + '</span>' +
           '<span><b>水やり</b>' + curCal.water + '</span>' +
           '<span><b>肥料</b>' + curCal.fert + '</span>' +
@@ -90,6 +90,7 @@
       tile('月別ガイド', '4月から3月まで、その月にやることだけを読み下せる形に', '#/months') +
       tile('トラブル対策', '葉が黄色い・茶色いなどのサインから原因と対処を探す', '#/troubles') +
       tile('基本ガイド', '光・水・肥料・植え替え・支柱・剪定など、管理の考え方の土台', '#/guide') +
+      tile('気象データ', '直近の気象実績・予報と、平年値との比較。' + esc(D.climate.updatedAt) + 'に更新', '#/climate') +
       tile('道具・チェックリスト', '資材の一覧と、毎月15分でできる巡回チェック', '#/tools') +
       '</div>';
   }
@@ -205,7 +206,7 @@
     var cal = calendarRowForNum(m.num);
     var calHtml = cal ? (
       '<div class="month-cal">' +
-      '<span><b>気象</b>' + cal.weather.replace(/<[^>]+>/g, '') + '</span>' +
+      '<span><b>気象</b>' + cal.weather.replace(/<[^>]+>/g, ' ') + '</span>' +
       '<span><b>置き場所・光</b>' + cal.placement + '</span>' +
       '<span><b>水やり</b>' + cal.water + '</span>' +
       '<span><b>肥料・活力剤</b>' + cal.fert + '</span>' +
@@ -277,6 +278,51 @@
       '<div class="guide-body">' + ch.html + '</div>';
   }
 
+  // ---------------- 気象データ ----------------
+  function findClimateCycle(id) {
+    for (var i = 0; i < D.climate.cycles.length; i++) if (D.climate.cycles[i].id === id) return D.climate.cycles[i];
+    return null;
+  }
+
+  function viewClimate(id) {
+    var cycles = D.climate.cycles;
+    var activeId = id || cycles[cycles.length - 1].id;
+    var cy = findClimateCycle(activeId) || cycles[cycles.length - 1];
+    activeId = cy.id;
+
+    var pills = cycles.map(function (c) {
+      return '<a href="#/climate/' + c.id + '" class="' + (c.id === activeId ? 'active' : '') + '">' + esc(c.label) + '</a>';
+    }).join('');
+
+    var rowsHtml = cy.rows.map(function (r) {
+      return (
+        '<tr><th>' + esc(r.monthLabel) + '</th>' +
+        '<td>' + esc(r.avgTemp) + '</td>' +
+        '<td>' + esc(r.tempRange) + '<br><span style="color:var(--ink-soft);font-size:11px;">' + esc(r.tempNote) + '</span></td>' +
+        '<td>' + esc(r.precip) + '</td>' +
+        '<td>' + esc(r.sunshine) + '</td>' +
+        '<td' + (r.status.indexOf('実績') === -1 ? ' class="hot"' : '') + '>' + esc(r.status) + '</td>' +
+        '<td>' + esc(r.note) + '</td></tr>'
+      );
+    }).join('');
+
+    var sectionsHtml = cy.sections.map(function (s) {
+      return '<div class="month-section"><h4>' + esc(s.heading) + '</h4>' + s.html + '</div>';
+    }).join('');
+
+    app.innerHTML =
+      '<h1 class="page-title">' + esc(D.climate.title) + '</h1>' +
+      '<p class="page-lead">' + esc(D.climate.periodLabel) + '　最終更新：' + esc(D.climate.updatedAt) + '</p>' +
+      '<div class="note"><span class="tag">この資料について</span>' + D.climate.intro.html + '</div>' +
+      '<div class="guide-pills">' + pills + '</div>' +
+      '<p class="month-theme">' + cy.summaryHtml.replace(/<[^>]+>/g, '') + '</p>' +
+      '<div class="table-wrap"><table><thead><tr><th>月</th><th>平均気温</th><th>最高・最低気温</th><th>降水量</th><th>日照時間</th><th>状態</th><th>ひとこと</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>' +
+      sectionsHtml +
+      '<div class="month-section"><h4>' + esc(D.climate.comparison.heading) + '</h4>' + D.climate.comparison.html + '</div>' +
+      '<div class="note warn"><span class="tag">次回更新の予定</span><p>' + esc(D.climate.nextUpdate) + '</p></div>' +
+      '<p style="font-size:11px;color:var(--ink-soft);line-height:1.9;margin-top:24px;">出典：' + D.climate.sources.map(esc).join('／') + '</p>';
+  }
+
   // ---------------- 道具・チェックリスト ----------------
   function viewTools() {
     var addRows = D.tools.addRows.map(function (r) {
@@ -345,6 +391,10 @@
       case 'guide':
         setActiveTab('guide');
         viewGuide(r.sub);
+        break;
+      case 'climate':
+        setActiveTab('climate');
+        viewClimate(r.sub);
         break;
       case 'tools':
         setActiveTab('tools');
