@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>室内植物 栽培記録</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="top-title-row">
+      <div class="top-title"><small>HOUSEPLANT RECORD</small>室内植物 栽培記録</div>
+    </div>
+    <p class="top-sub">大分県大分市鴛野・南向きベランダ付き1K最上階／植物13種</p>
+    <nav class="tabs" id="tabs">
+      <a href="#/home" data-tab="home">ホーム</a>
+      <a href="#/plants" data-tab="plants">植物図鑑</a>
+      <a href="#/months" data-tab="months">月別ガイド</a>
+      <a href="#/troubles" data-tab="troubles">トラブル対策</a>
+      <a href="#/guide" data-tab="guide">基本ガイド</a>
+      <a href="#/tools" data-tab="tools">道具・チェックリスト</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <main id="app"></main>
+  <footer class="site">
+    室内植物 栽培記録 ／ 元データ：観葉植物 栽培台帳（大分地方気象台 平年値 1991〜2020年を基準）<br>
+    数値はあくまで目安です。最終的な判断はいつも目の前の株の状態を優先してください。
+  </footer>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
